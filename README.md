@@ -1,7 +1,3 @@
-Here is the **corrected README** reflecting the **final `unitdb` API** (no `commit`, no `data` accessors).
-
----
-
 ## unitdb
 
 A lightweight **SQLite-backed JSON document database** for Node.js with a **minimal API** and **multi-process safety**. All persistence, locking, durability, and recovery are delegated entirely to SQLite.
