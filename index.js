@@ -35,21 +35,22 @@ function unitdb(file) {
         var v = norm(value)
 
         for (var op in condition) {
-          var t = norm(condition[op])
+          var target = condition[op]
 
           if (op === '$regex') {
-            if (typeof value !== 'string' || !condition[op].test(value))
-              return false
+            if (typeof value !== 'string' || !target.test(value)) return false
             continue
           }
+
+          var t = norm(target)
 
           if (op === '$gt' && !(v > t)) return false
           if (op === '$lt' && !(v < t)) return false
           if (op === '$gte' && !(v >= t)) return false
           if (op === '$lte' && !(v <= t)) return false
           if (op === '$ne' && v === t) return false
-          if (op === '$in' && !condition[op].includes(v)) return false
-          if (op === '$nin' && condition[op].includes(v)) return false
+          if (op === '$in' && !target.includes(v)) return false
+          if (op === '$nin' && target.includes(v)) return false
         }
       } else {
         if (value !== condition) return false
@@ -124,20 +125,6 @@ function unitdb(file) {
       }
 
       return id
-    },
-
-    async commit() {
-      /* no-op: SQLite commits per statement */
-    },
-
-    get data() {
-      return allDocs()
-    },
-
-    set data(v) {
-      db.exec('DELETE FROM records')
-      var ins = db.prepare('INSERT INTO records (id, json) VALUES (?, ?)')
-      for (var i = 0; i < v.length; i++) ins.run(v[i].id, JSON.stringify(v[i]))
     }
   }
 }

@@ -9,7 +9,6 @@ var db
 
 beforeEach(function () {
   if (fsSync.existsSync(dbPath)) fsSync.unlinkSync(dbPath)
-
   db = unitdb(dbPath)
 })
 
@@ -65,10 +64,9 @@ test('get() array and regex operators', async function ({ t }) {
   t.equal(db.get({ name: { $regex: /^Ap/ } }).length, 1)
 })
 
-test('date handling and string recovery', async function ({ t }) {
+test('date handling and persistence across reopen', async function ({ t }) {
   var myDate = new Date('2025-05-05')
   await db.set({ id: 'dt', time: myDate })
-  await db.commit()
 
   t.equal(db.get({ time: { $gt: new Date('2025-01-01') } }).length, 1)
 
@@ -76,15 +74,14 @@ test('date handling and string recovery', async function ({ t }) {
   t.equal(db2.get({ time: { $gt: new Date('2025-01-01') } }).length, 1)
 })
 
-test('concurrency and commit persistence', async function ({ t }) {
+test('concurrent writes and visibility', async function ({ t }) {
   var p1 = db.set({ name: 'a' })
   var p2 = db.set({ name: 'b' })
-  await db.commit()
   await p1
   await p2
 
   var db2 = unitdb(dbPath)
-  t.equal(db2.data.length, 2)
+  t.equal(db2.get({}).length, 2)
 })
 
 test('edge cases: missing keys and nulls', async function ({ t }) {

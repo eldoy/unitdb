@@ -1,21 +1,25 @@
+Here is the **corrected README** reflecting the **final `unitdb` API** (no `commit`, no `data` accessors).
+
+---
+
 ## unitdb
 
-A lightweight **SQLite-backed JSON document database** for Node.js with a **minimal API**, **multi-process safety**, and **zero custom persistence logic**. All correctness, locking, durability, and recovery are delegated to SQLite.
+A lightweight **SQLite-backed JSON document database** for Node.js with a **minimal API** and **multi-process safety**. All persistence, locking, durability, and recovery are delegated entirely to SQLite.
 
-`unitdb` keeps the same simple query and mutation model as `sysdb`, but replaces in-memory state with **SQLite as the source of truth**, making it safe for **multiple processes, workers, and restarts**.
+`unitdb` keeps the same simple query and mutation model as `sysdb`, but uses **SQLite as the sole source of truth**, making it safe for **multiple processes, workers, and restarts**.
 
 ---
 
 ### Features
 
-* **SQLite-backed:** Disk is authoritative; memory is only a cache.
+* **SQLite-backed:** Disk is authoritative.
 * **Multi-process safe:** Concurrent readers and writers supported.
-* **Crash safe:** SQLite handles journaling and recovery.
+* **Crash safe:** SQLite journaling and recovery.
 * **Mongo-style Queries:** `$gt`, `$lt`, `$gte`, `$lte`, `$ne`, `$in`, `$nin`, `$regex`.
 * **JSON Documents:** Schema-less records stored as JSON.
 * **Atomic Writes:** Each mutation is fully committed or rolled back.
 * **Pagination:** Built-in `limit` and `skip`.
-* **Zero custom WAL code:** SQLite handles all durability.
+* **Minimal API:** Only `get()` and `set()`.
 
 ---
 
@@ -108,36 +112,6 @@ var page = db.get({ type: 'log' }, {
 
 ---
 
-#### 6. Commits
-
-SQLite commits each statement automatically. `commit()` is provided for API compatibility and future batching, but is currently a no-op.
-
-```js
-await db.set({ important: 'data' })
-await db.commit()
-```
-
----
-
-#### 7. Direct Data Access
-
-The entire dataset can be accessed as plain JavaScript objects.
-
-```js
-// Read all records
-var docs = db.data
-
-// Replace entire dataset (init or controlled usage only)
-db.data = [
-  { id: 'a', value: 1 },
-  { id: 'b', value: 2 }
-]
-```
-
-All changes are persisted immediately through SQLite.
-
----
-
 ### Data Model
 
 Internally, `unitdb` uses:
@@ -163,14 +137,14 @@ No schema migrations are required.
 
 ### Comparison with `sysdb`
 
-| Feature            | sysdb      | unitdb          |
-| ------------------ | ---------- | --------------- |
-| Source of truth    | Memory     | SQLite          |
-| Multi-process safe | No         | Yes             |
-| Crash recovery     | Custom WAL | SQLite          |
-| Read latency       | Lower      | Slightly higher |
-| Write durability   | Eventual   | Immediate       |
-| Complexity         | Minimal    | Still minimal   |
+| Feature            | sysdb             | unitdb          |
+| ------------------ | ----------------- | --------------- |
+| Source of truth    | Memory            | SQLite          |
+| Multi-process safe | No                | Yes             |
+| Crash recovery     | Optional snapshot | SQLite          |
+| Read latency       | Lower             | Slightly higher |
+| Write durability   | Eventual          | Immediate       |
+| API surface        | Minimal           | Minimal         |
 
 ---
 
@@ -180,8 +154,6 @@ No schema migrations are required.
 | ----------------------- | ------------------------------------------------------------- |
 | `get(query, [options])` | Returns matching documents. Supports `{ limit, skip, sort }`. |
 | `set(query, [values])`  | Insert, update, or delete documents.                          |
-| `commit()`              | No-op (SQLite auto-commit).                                   |
-| `get data / set data`   | Full dataset access and replacement.                          |
 
 ---
 
