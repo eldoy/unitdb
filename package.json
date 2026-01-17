@@ -1,0 +1,22 @@
+{
+  "name": "memdb",
+  "version": "0.4.0",
+  "description": "High performance in-memory persistent JSON database.",
+  "author": "Vidar Eldøy <vidar@eldoy.com>",
+  "license": "ISC",
+  "scripts": {
+    "test": "spekk",
+    "test:watch": "nodemon --exec spekk"
+  },
+  "homepage": "https://github.com/eldoy/memdb#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eldoy/memdb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eldoy/memdb/issues"
+  },
+  "devDependencies": {
+    "spekk": "^0.3.2"
+  }
+}
