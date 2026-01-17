@@ -1,20 +1,20 @@
 {
-  "name": "unitdb",
-  "version": "0.2.1",
-  "description": "Minimal SQLite-backed JSON document database for Node.js with multi-process safety.",
+  "name": "sysdb",
+  "version": "0.3.0",
+  "description": "Minimal SQLite-backed JSON document database for NodeJS.",
   "author": "Vidar Eldøy <vidar@eldoy.com>",
   "license": "ISC",
   "scripts": {
     "test": "spekk",
     "test:watch": "nodemon --exec spekk"
   },
-  "homepage": "https://github.com/eldoy/unitdb#readme",
+  "homepage": "https://github.com/eldoy/sysdb#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eldoy/unitdb.git"
+    "url": "git+https://github.com/eldoy/sysdb.git"
   },
   "bugs": {
-    "url": "https://github.com/eldoy/unitdb/issues"
+    "url": "https://github.com/eldoy/sysdb/issues"
   },
   "devDependencies": {
     "spekk": "^0.3.2"

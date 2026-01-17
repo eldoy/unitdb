@@ -1,15 +1,15 @@
-var unitdb = require('../../index.js')
+var sysdb = require('../../index.js')
 var os = require('node:os')
 var path = require('node:path')
 var fsSync = require('node:fs')
 
 var tmpdir = os.tmpdir()
-var dbPath = path.join(tmpdir, 'unitdb.sqlite')
+var dbPath = path.join(tmpdir, 'sysdb.sqlite')
 var db
 
 beforeEach(function () {
   if (fsSync.existsSync(dbPath)) fsSync.unlinkSync(dbPath)
-  db = unitdb(dbPath)
+  db = sysdb(dbPath)
 })
 
 test('get() basic and numeric operators', async function ({ t }) {
@@ -70,7 +70,7 @@ test('date handling and persistence across reopen', async function ({ t }) {
 
   t.equal(db.get({ time: { $gt: new Date('2025-01-01') } }).length, 1)
 
-  var db2 = unitdb(dbPath)
+  var db2 = sysdb(dbPath)
   t.equal(db2.get({ time: { $gt: new Date('2025-01-01') } }).length, 1)
 })
 
@@ -80,7 +80,7 @@ test('concurrent writes and visibility', async function ({ t }) {
   await p1
   await p2
 
-  var db2 = unitdb(dbPath)
+  var db2 = sysdb(dbPath)
   t.equal(db2.get({}).length, 2)
 })
 

@@ -1,8 +1,8 @@
-## unitdb
+## sysdb
 
 A lightweight **SQLite-backed JSON document database** for Node.js with a **minimal API** and **multi-process safety**. All persistence, locking, durability, and recovery are delegated entirely to SQLite.
 
-`unitdb` keeps the same simple query and mutation model as `sysdb`, but uses **SQLite as the sole source of truth**, making it safe for **multiple processes, workers, and restarts**.
+`sysdb` keeps the same simple query and mutation model as `sysdb`, but uses **SQLite as the sole source of truth**, making it safe for **multiple processes, workers, and restarts**.
 
 ---
 
@@ -22,7 +22,7 @@ A lightweight **SQLite-backed JSON document database** for Node.js with a **mini
 ### Installation
 
 ```sh
-npm i unitdb
+npm i sysdb
 ```
 
 Node.js **v22+** required (uses built-in `node:sqlite`).
@@ -32,8 +32,8 @@ Node.js **v22+** required (uses built-in `node:sqlite`).
 ### Usage
 
 ```js
-var unitdb = require('unitdb')
-var db = unitdb('./unitdb.sqlite')
+var sysdb = require('sysdb')
+var db = sysdb('./sysdb.sqlite')
 ```
 
 ---
@@ -110,7 +110,7 @@ var page = db.get({ type: 'log' }, {
 
 ### Data Model
 
-Internally, `unitdb` uses:
+Internally, `sysdb` uses:
 
 * One SQLite database file
 * One table:
@@ -131,19 +131,6 @@ No schema migrations are required.
 
 ---
 
-### Comparison with `sysdb`
-
-| Feature            | sysdb             | unitdb          |
-| ------------------ | ----------------- | --------------- |
-| Source of truth    | Memory            | SQLite          |
-| Multi-process safe | No                | Yes             |
-| Crash recovery     | Optional snapshot | SQLite          |
-| Read latency       | Lower             | Slightly higher |
-| Write durability   | Eventual          | Immediate       |
-| API surface        | Minimal           | Minimal         |
-
----
-
 ### API Reference
 
 | Method                  | Description                                                   |
@@ -161,4 +148,4 @@ ISC.
 
 ### Acknowledgements
 
-Created by Vidar Eldøy, Tekki AS.
+Created by Vidar Eldøy.

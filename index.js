@@ -1,7 +1,7 @@
 var { DatabaseSync } = require('node:sqlite')
 var crypto = require('node:crypto')
 
-function unitdb(file) {
+function sysdb(file) {
   var db = new DatabaseSync(file)
 
   db.exec(`
@@ -129,4 +129,4 @@ function unitdb(file) {
   }
 }
 
-module.exports = unitdb
+module.exports = sysdb
