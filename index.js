@@ -238,5 +238,5 @@ module.exports = function memdb() {
     return { n: matched.length }
   }
 
-  return { get: get, set: set }
+  return { get, set, data }
 }
