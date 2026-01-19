@@ -1,6 +1,6 @@
 var crypto = require('crypto')
 
-module.exports = function unitdb() {
+module.exports = function memdb() {
   var data = []
 
   function genId() {
