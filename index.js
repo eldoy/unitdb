@@ -1,147 +1,133 @@
-var crypto = require('node:crypto')
+var crypto = require('crypto')
 
-function unitdb() {
+module.exports = function unitdb() {
   var data = []
 
-  function norm(v) {
-    if (v instanceof Date) return v.getTime()
-    if (typeof v === 'string') {
-      var t = Date.parse(v)
-      return isNaN(t) ? v : t
+  function genId() {
+    return crypto.randomUUID()
+  }
+
+  function isDate(v) {
+    return v instanceof Date
+  }
+
+  function valEq(a, b) {
+    if (isDate(a) && isDate(b)) return a.getTime() === b.getTime()
+    return a === b
+  }
+
+  function cmp(a, b) {
+    if (isDate(a) && isDate(b)) return a.getTime() - b.getTime()
+    if (typeof a !== typeof b) return 0
+    if (a < b) return -1
+    if (a > b) return 1
+    return 0
+  }
+
+  function matchOp(val, op, cond) {
+    if (op === '$gt') return val > cond
+    if (op === '$gte') return val >= cond
+    if (op === '$lt') return val < cond
+    if (op === '$lte') return val <= cond
+    if (op === '$ne') return !valEq(val, cond)
+    if (op === '$in')
+      return cond.some(function (c) {
+        return valEq(val, c)
+      })
+    if (op === '$nin')
+      return !cond.some(function (c) {
+        return valEq(val, c)
+      })
+    if (op === '$regex') {
+      if (typeof val !== 'string') return false
+      var re
+      try {
+        re = cond instanceof RegExp ? cond : new RegExp(cond)
+      } catch (e) {
+        return false
+      }
+      return re.test(val)
     }
-    return v
+    return false
   }
 
-  function isUnsafeKey(k) {
-    return k === '__proto__' || k === 'constructor' || k === 'prototype'
-  }
-
-  function equals(a, b) {
-    return norm(a) === norm(b)
-  }
-
-  function matches(doc, query) {
+  function matchDoc(doc, query) {
     for (var k in query) {
-      if (isUnsafeKey(k)) continue
+      if (k === '__proto__') continue
+      var qv = query[k]
+      var dv = doc[k]
 
-      var condition = query[k]
-      var value = doc[k]
-
-      if (
-        typeof condition === 'object' &&
-        condition !== null &&
-        !Array.isArray(condition) &&
-        !(condition instanceof RegExp)
-      ) {
-        var v = norm(value)
-
-        for (var op in condition) {
-          var target = condition[op]
-
-          if (op === '$regex') {
-            var re = target
-
-            if (!(re instanceof RegExp)) {
-              if (typeof re !== 'string') return false
-              try {
-                re = new RegExp(re)
-              } catch {
-                return false
-              }
-            }
-
-            if (typeof value !== 'string' || !re.test(value)) return false
-            continue
-          }
-
-          if (op === '$in') {
-            var ok = false
-            for (var i = 0; i < target.length; i++) {
-              if (equals(value, target[i])) {
-                ok = true
-                break
-              }
-            }
-            if (!ok) return false
-            continue
-          }
-
-          if (op === '$nin') {
-            for (var i = 0; i < target.length; i++) {
-              if (equals(value, target[i])) return false
-            }
-            continue
-          }
-
-          var t = norm(target)
-
-          if (op === '$gt' && !(v > t)) return false
-          if (op === '$lt' && !(v < t)) return false
-          if (op === '$gte' && !(v >= t)) return false
-          if (op === '$lte' && !(v <= t)) return false
-          if (op === '$ne' && v === t) return false
+      if (qv && typeof qv === 'object' && !Array.isArray(qv) && !isDate(qv)) {
+        for (var op in qv) {
+          if (!matchOp(dv, op, qv[op])) return false
         }
       } else {
-        if (!equals(value, condition)) return false
+        if (!valEq(dv, qv)) return false
       }
     }
     return true
   }
 
-  return {
-    get(query, options) {
-      var limit = (options && options.limit) || Infinity
-      var skip = (options && options.skip) || 0
-      var sort = options && options.sort
-      var results = []
+  function get(query, opts) {
+    if (!query) query = {}
+    if (!opts) opts = {}
 
-      if (
-        !query ||
-        typeof query !== 'object' ||
-        Object.keys(query).length === 0
-      ) {
-        results = data.slice()
-      } else {
-        for (var i = 0; i < data.length; i++)
-          if (matches(data[i], query)) results.push(data[i])
-      }
+    var res = data.filter(function (d) {
+      return matchDoc(d, query)
+    })
 
-      if (sort) {
-        var keys = Object.keys(sort)
-        results.sort(function (a, b) {
-          for (var i = 0; i < keys.length; i++) {
-            var k = keys[i]
-            var d = sort[k]
-            if (a[k] === b[k]) continue
-            return d === -1 ? (a[k] < b[k] ? 1 : -1) : a[k] > b[k] ? 1 : -1
-          }
-          return 0
-        })
-      }
-
-      return results.slice(skip, skip + limit)
-    },
-
-    set(query, values) {
-      var id
-
-      if (values === undefined) {
-        values = query
-        values.id = values.id || crypto.randomUUID()
-        id = values.id
-        data.push(values)
-      } else if (values === null) {
-        data = data.filter(function (d) {
-          return !matches(d, query)
-        })
-      } else {
-        for (var i = 0; i < data.length; i++)
-          if (matches(data[i], query)) Object.assign(data[i], values)
-      }
-
-      return id
+    if (opts.sort) {
+      var keys = Object.keys(opts.sort)
+      res.sort(function (a, b) {
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i]
+          var dir = opts.sort[k]
+          var c = cmp(a[k], b[k])
+          if (c !== 0) return c * dir
+        }
+        return 0
+      })
     }
-  }
-}
 
-module.exports = unitdb
+    var s = opts.skip || 0
+    var l = opts.limit == null ? res.length : opts.limit
+    return res.slice(s, s + l)
+  }
+
+  function insertOne(obj) {
+    if (!obj.id) obj.id = genId()
+    data.push(obj)
+    return obj.id
+  }
+
+  function set(q, v) {
+    if (Array.isArray(q)) {
+      var out = []
+      for (var i = 0; i < q.length; i++) {
+        insertOne(q[i])
+        out.push(q[i])
+      }
+      return out
+    }
+
+    if (v === undefined) {
+      insertOne(q)
+      return q.id
+    }
+
+    var idx = data.findIndex(function (d) {
+      return matchDoc(d, q)
+    })
+    if (idx === -1) return null
+
+    if (v === null) {
+      data = data.slice(0, idx).concat(data.slice(idx + 1))
+      return null
+    }
+
+    Object.assign(data[idx], v)
+    return data[idx].id
+  }
+
+  return { get: get, set: set }
+}

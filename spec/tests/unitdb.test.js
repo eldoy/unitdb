@@ -39,6 +39,24 @@ test('set() create, update, remove', function ({ t }) {
   t.equal(db.get({ id: id }).length, 0)
 })
 
+test('set() create multiple documents', function ({ t }) {
+  var docs = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
+
+  var res = db.set(docs)
+
+  t.equal(Array.isArray(res), true)
+  t.equal(res.length, 3)
+
+  t.ok(res[0].id)
+  t.ok(res[1].id)
+  t.ok(res[2].id)
+
+  t.equal(db.get({}).length, 3)
+  t.equal(db.get({ name: 'a' }).length, 1)
+  t.equal(db.get({ name: 'b' }).length, 1)
+  t.equal(db.get({ name: 'c' }).length, 1)
+})
+
 test('pagination (limit and skip) with sort', function ({ t }) {
   db.set({ n: 1 })
   db.set({ n: 2 })
