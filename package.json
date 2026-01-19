@@ -1,20 +1,20 @@
 {
-  "name": "memdb",
+  "name": "unitdb",
   "version": "0.4.0",
-  "description": "High performance in-memory persistent JSON database.",
+  "description": "High performance in-memory JSON database.",
   "author": "Vidar Eldøy <vidar@eldoy.com>",
   "license": "ISC",
   "scripts": {
     "test": "spekk",
     "test:watch": "nodemon --exec spekk"
   },
-  "homepage": "https://github.com/eldoy/memdb#readme",
+  "homepage": "https://github.com/eldoy/unitdb#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eldoy/memdb.git"
+    "url": "git+https://github.com/eldoy/unitdb.git"
   },
   "bugs": {
-    "url": "https://github.com/eldoy/memdb/issues"
+    "url": "https://github.com/eldoy/unitdb/issues"
   },
   "devDependencies": {
     "spekk": "^0.3.2"

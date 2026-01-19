@@ -1,17 +1,7 @@
-var fs = require('node:fs/promises')
-var fsSync = require('node:fs')
 var crypto = require('node:crypto')
 
-function memdb(file) {
+function unitdb() {
   var data = []
-  var debounceMs = 5
-  var queue = Promise.resolve()
-
-  try {
-    data = JSON.parse(fsSync.readFileSync(file, 'utf8'))
-  } catch {
-    data = []
-  }
 
   function norm(v) {
     if (v instanceof Date) return v.getTime()
@@ -60,23 +50,6 @@ function memdb(file) {
     return true
   }
 
-  async function writeSnapshot() {
-    var tmp = file + '.tmp'
-    await fs.writeFile(tmp, JSON.stringify(data), 'utf8')
-    await fs.rename(tmp, file)
-  }
-
-  function persist() {
-    queue = queue.then(async function () {
-      if (debounceMs > 0)
-        await new Promise(function (r) {
-          setTimeout(r, debounceMs)
-        })
-      await writeSnapshot()
-    })
-    return queue
-  }
-
   return {
     get(query, options) {
       var limit = (options && options.limit) || Infinity
@@ -107,7 +80,7 @@ function memdb(file) {
       return results.slice(skip, skip + limit)
     },
 
-    async set(query, values) {
+    set(query, values) {
       var id
 
       if (values === undefined) {
@@ -124,10 +97,9 @@ function memdb(file) {
           if (matches(data[i], query)) Object.assign(data[i], values)
       }
 
-      await persist()
       return id
     }
   }
 }
 
-module.exports = memdb
+module.exports = unitdb

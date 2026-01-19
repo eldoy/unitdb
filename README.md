@@ -1,10 +1,8 @@
-## memdb
+## UnitDB
 
 A lightweight, **in-memory JSON database** for Node.js designed for speed and simplicity. Intended for **single-process environments only**. Clustered or multi-process usage is not supported.
 
-`memdb` keeps all data in memory and persists snapshots to disk asynchronously. Reads are synchronous and fast; writes are debounced and persisted in the background.
-
-Optimized for smaller datasets, typically up to **~100,000 records**.
+`unitdb` keeps all data in memory and does not persist data.
 
 ---
 
@@ -12,7 +10,6 @@ Optimized for smaller datasets, typically up to **~100,000 records**.
 
 * **Mongo-style Queries:** `$gt`, `$lt`, `$gte`, `$lte`, `$ne`, `$in`, `$nin`, `$regex`
 * **In-memory Authority:** All reads operate on in-memory data
-* **Atomic Persistence:** Snapshots written via `.tmp` + rename
 * **Date Support:** Automatic normalization and comparison of `Date` values
 * **Pagination:** Built-in `limit` and `skip`
 * **Minimal API:** Only `get()` and `set()`
@@ -22,7 +19,7 @@ Optimized for smaller datasets, typically up to **~100,000 records**.
 ### Installation
 
 ```sh
-npm i memdb
+npm i unitdb
 ```
 
 ---
@@ -30,17 +27,17 @@ npm i memdb
 ### Usage
 
 ```js
-var memdb = require('memdb')
+var unitdb = require('unitdb')
 
 // Single database / collection
-var db = memdb('./memdb.json')
+var db = unitdb('./unitdb.json')
 
 var users = db.get({ type: 'user' })
 
 // Multiple logical tables
 var db = {
-  users: memdb('./users.json'),
-  projects: memdb('./projects.json'),
+  users: unitdb('./users.json'),
+  projects: unitdb('./projects.json'),
 }
 
 var users = db.users.get({})
@@ -56,7 +53,7 @@ var projects = db.projects.get({})
 Passing a single object inserts a new document. A UUID `id` is generated automatically if missing.
 
 ```js
-await db.set({
+db.set({
   name: 'Project Alpha',
   status: 'pending',
   priority: 1,
@@ -88,10 +85,10 @@ var results = db.get({
 
 ```js
 // Update all pending tasks
-await db.set({ status: 'pending' }, { status: 'active' })
+db.set({ status: 'pending' }, { status: 'active' })
 
 // Update by ID
-await db.set({ id: 'some-uuid' }, { progress: 100 })
+db.set({ id: 'some-uuid' }, { progress: 100 })
 ```
 
 ---
@@ -100,13 +97,13 @@ await db.set({ id: 'some-uuid' }, { progress: 100 })
 
 ```js
 // Delete a single record
-await db.set({ id: 'some-uuid' }, null)
+db.set({ id: 'some-uuid' }, null)
 
 // Delete all completed tasks
-await db.set({ status: 'completed' }, null)
+db.set({ status: 'completed' }, null)
 
 // Clear entire database
-await db.set({}, null)
+db.set({}, null)
 ```
 
 ---
@@ -149,7 +146,7 @@ There is no explicit flush or commit operation.
 * No transactional guarantees
 * No live reload of external file changes
 
-For multi-process or crash-durable use cases, use **`unitdb`** instead.
+For multi-process, persistence or crash-durable use cases, use **`sysdb`** instead.
 
 ---
 
@@ -161,4 +158,4 @@ ISC.
 
 ### Acknowledgements
 
-Created by Vidar Eldøy, Tekki AS.
+Created by [Vidar Eldøy](https://eldoy.com)
